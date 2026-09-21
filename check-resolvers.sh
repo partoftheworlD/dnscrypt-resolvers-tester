@@ -7,17 +7,16 @@ DNSCRYPT_BIN="${DNSCRYPT_BIN:-/usr/sbin/dnscrypt-proxy}"
 DNSCRYPT_CONF="${DNSCRYPT_CONF:-/etc/dnscrypt-proxy/dnscrypt-proxy.toml}"
 DNSCRYPT_CACHE_DIR="${DNSCRYPT_CACHE_DIR:-/var/cache/dnscrypt-proxy}"
 
-while getopts ":vd:c:" opt; do
-  case $opt in
-    v) Verbose=1 ;;
-    d) Domain="$OPTARG" ;;
-    c) DNSCRYPT_CONF="$OPTARG" ;;
-    \?) echo "Неизвестный параметр: -$OPTARG" >&2; exit 1 ;;
-    :)  echo "Параметр -$OPTARG требует значения" >&2; exit 1 ;;
+while (($#)); do
+  case $1 in
+    -v) Verbose=1 ;;
+    -d) Domain=$2; shift ;;
+    -c) DNSCRYPT_CONF=$2; shift ;;
+    -*) echo "Неизвестный параметр: $1" >&2; exit 1 ;;
+    *)  Domain=$1 ;;
   esac
+  shift
 done
-shift $((OPTIND-1))
-[ $# -gt 0 ] && Domain="$1"
 
 [ ! -e "$DNSCRYPT_BIN" ]  && { echo "Не найден dnscrypt-proxy: $DNSCRYPT_BIN" >&2; exit 1; }
 [ ! -f "$DNSCRYPT_CONF" ] && { echo "Не найден конфиг: $DNSCRYPT_CONF" >&2; exit 1; }
