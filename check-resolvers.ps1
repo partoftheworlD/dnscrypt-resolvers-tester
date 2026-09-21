@@ -126,7 +126,7 @@ foreach ($Resolver in $Resolvers) {
         $Sw = [System.Diagnostics.Stopwatch]::StartNew()
         $Output = & nslookup.exe `
             "-type=A" `
-            "-timeout=3" `
+            "-timeout=5" `
             "-retry=1" `
             "-port=$Port" `
             $Domain `

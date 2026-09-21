@@ -121,9 +121,9 @@ for Resolver in "${Resolvers[@]}"; do
 
   start_ns=$(now_ns)
   if command -v nslookup >/dev/null 2>&1; then
-    Output=$(timeout 6 nslookup -type=A -timeout=3 -retry=1 -port="$Port" "$Domain" 127.0.0.1 2>&1 || true)
+    Output=$(timeout 6 nslookup -type=A -timeout=5 -retry=1 -port="$Port" "$Domain" 127.0.0.1 2>&1 || true)
   elif command -v dig >/dev/null 2>&1; then
-    Output=$(timeout 6 dig +short +time=3 +tries=1 @127.0.0.1 -p "$Port" A "$Domain" 2>&1 || true)
+    Output=$(timeout 6 dig +short +time=5 +tries=1 @127.0.0.1 -p "$Port" A "$Domain" 2>&1 || true)
   else
     Output=""
   fi
