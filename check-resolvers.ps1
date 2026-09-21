@@ -54,7 +54,7 @@ $Resolvers = & $Exe -config $BaseConfig -list 2>$null |
     Sort-Object -Unique
 
 if (-not $Resolvers) {
-    $Resolvers = @("scaleway-fr", "google", "yandex", "cloudflare")
+    $Resolvers = @("google", "yandex", "cloudflare")
 }
 
 $BadResolvers = [System.Collections.Generic.List[string]]::new()

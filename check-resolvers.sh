@@ -60,12 +60,12 @@ now_ns() {
   [[ $v =~ ^[0-9]+$ ]] && printf '%s' "$v" || printf '%s000000000' "$(date +%s)"
 }
 
-ListOut="$(cd "$RunDir" && timeout 30 "$DNSCRYPT_BIN" -config "$DNSCRYPT_CONF" -list-all 2>/dev/null || true)"
+ListOut="$(cd "$RunDir" && timeout 30 "$DNSCRYPT_BIN" -config "$DNSCRYPT_CONF" -list 2>/dev/null || true)"
 [ -z "$ListOut" ] && ListOut="$(cd "$RunDir" && timeout 30 "$DNSCRYPT_BIN" -config "$DNSCRYPT_CONF" -list 2>/dev/null || true)"
 
 mapfile -t Resolvers < <(printf '%s\n' "$ListOut" | tr -d '\r' \
   | grep -E '^[A-Za-z0-9][A-Za-z0-9._-]*$' | sort -u)
-[ ${#Resolvers[@]} -eq 0 ] && Resolvers=(scaleway-fr google yandex cloudflare)
+[ ${#Resolvers[@]} -eq 0 ] && Resolvers=(google yandex cloudflare)
 
 BadResolvers=()
 Total=${#Resolvers[@]}
