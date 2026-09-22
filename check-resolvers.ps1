@@ -1,5 +1,6 @@
 ﻿param(
     [string]$Domain = "example.com",
+    [string]$c,
     [switch]$v
 )
 
@@ -10,7 +11,19 @@ chcp 65001 | Out-Null
 $OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 
 $Exe = Join-Path $PSScriptRoot "dnscrypt-proxy.exe"
-$BaseConfig = Join-Path $PSScriptRoot "dnscrypt-proxy.toml"
+
+if ($c) {
+    if ([System.IO.Path]::IsPathRooted($c)) {
+        $BaseConfig = $c
+    }
+    else {
+        $BaseConfig = Join-Path $PSScriptRoot $c
+    }
+}
+else {
+    $BaseConfig = Join-Path $PSScriptRoot "dnscrypt-proxy.toml"
+}
+
 $TempDir = Join-Path $env:TEMP "dnscrypt-test"
 
 function Get-FreePort {
