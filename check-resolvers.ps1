@@ -128,7 +128,7 @@ foreach ($Resolver in $Resolvers) {
             -PassThru `
             -WindowStyle Hidden
 
-        Start-Sleep -Milliseconds 2000
+        Start-Sleep -Milliseconds 1000
 
         if ($Process.HasExited) {
             if ($v) { Write-Host ("{0,-25} process exited" -f $Resolver) -ForegroundColor DarkYellow }

@@ -111,7 +111,7 @@ for Resolver in "${Resolvers[@]}"; do
 
   ( cd "$RunDir" && exec "$DNSCRYPT_BIN" -config "$ConfigPath" >/dev/null 2>&1 ) &
   Process=$!
-  sleep 2
+  sleep 1
 
   if ! kill -0 "$Process" 2>/dev/null; then
     [ "$Verbose" -eq 1 ] && printf "%-25s process exited\n" "$Resolver"
