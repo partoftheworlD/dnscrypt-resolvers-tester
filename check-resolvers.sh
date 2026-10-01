@@ -3,7 +3,7 @@ set -u
 
 Domain="example.com"
 Verbose=0
-DNSCRYPT_BIN="${DNSCRYPT_BIN:-/usr/sbin/dnscrypt-proxy}"
+DNSCRYPT_BIN="${DNSCRYPT_BIN:-/usr/bin/dnscrypt-proxy}"
 DNSCRYPT_CONF="${DNSCRYPT_CONF:-/etc/dnscrypt-proxy/dnscrypt-proxy.toml}"
 DNSCRYPT_CACHE_DIR="${DNSCRYPT_CACHE_DIR:-/var/cache/dnscrypt-proxy}"
 
