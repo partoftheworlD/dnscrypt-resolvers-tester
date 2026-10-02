@@ -2,7 +2,7 @@
 
 Пути по умолчанию для `.sh`:
 
-- `/usr/sbin/dnscrypt-proxy`
+- `/usr/bin/dnscrypt-proxy`
 - `/etc/dnscrypt-proxy/dnscrypt-proxy.toml`
 - `/var/cache/dnscrypt-proxy`
 
