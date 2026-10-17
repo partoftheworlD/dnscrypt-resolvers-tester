@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$Domain = "example.com",
     [string]$c,
     [switch]$v
@@ -26,27 +26,6 @@ else {
 
 $TempDir = Join-Path $env:TEMP "dnscrypt-test"
 
-function Get-FreePort {
-    param([int]$StartPort = 53000)
-
-    for ($Port = $StartPort; $Port -le 59999; $Port++) {
-        $Udp = $null
-        $Tcp = $null
-        try {
-            $Udp = [System.Net.Sockets.UdpClient]::new([System.Net.IPAddress]::Loopback, $Port)
-            $Tcp = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, $Port)
-            $Tcp.Start()
-            return $Port
-        }
-        catch {}
-        finally {
-            if ($Tcp) { $Tcp.Stop() }
-            if ($Udp) { $Udp.Close(); $Udp.Dispose() }
-        }
-    }
-    throw "Не удалось найти свободный TCP/UDP-порт"
-}
-
 if (-not (Test-Path $Exe)) {
     Write-Host "Не найден dnscrypt-proxy.exe: $Exe" -ForegroundColor Red
     exit 1
@@ -62,9 +41,9 @@ New-Item -ItemType Directory -Force -Path $TempDir | Out-Null
 $BaseText = Get-Content -Raw -Encoding UTF8 $BaseConfig
 
 $Resolvers = & $Exe -config $BaseConfig -list 2>$null |
-    ForEach-Object { $_.ToString().Trim() } |
-    Where-Object { $_ -match '^[a-zA-Z0-9][a-zA-Z0-9._-]*$' } |
-    Sort-Object -Unique
+ForEach-Object { $_.ToString().Trim() } |
+Where-Object { $_ -match '^[a-zA-Z0-9][a-zA-Z0-9._-]*$' } |
+Sort-Object -Unique
 
 if (-not $Resolvers) {
     $Resolvers = @("google", "yandex", "cloudflare")
@@ -84,8 +63,6 @@ foreach ($Resolver in $Resolvers) {
     $ConfigPath = $null
 
     try {
-        $Port = Get-FreePort
-
         $Lines = $BaseText -split "`r?`n"
         $foundServer = $false
         $foundCache = $false
@@ -104,7 +81,7 @@ foreach ($Resolver in $Resolvers) {
         }
 
         if (-not $foundServer) { $Lines += "server_names = ['$Resolver']" }
-        if (-not $foundCache)  { $Lines += "cache = false" }
+        if (-not $foundCache) { $Lines += "cache = false" }
 
         $ConfigPath = Join-Path $TempDir ("dnscrypt-" + ($Resolver -replace '[^\w.-]', '_') + ".toml")
 
@@ -139,18 +116,17 @@ foreach ($Resolver in $Resolvers) {
         $Sw = [System.Diagnostics.Stopwatch]::StartNew()
         $Output = & nslookup.exe `
             "-type=A" `
-            "-timeout=5" `
+            "-timeout=1" `
             "-retry=1" `
-            "-port=$Port" `
             $Domain `
             "127.0.0.1" 2>&1 |
-            Out-String
+        Out-String
         $Sw.Stop()
 
         $Addresses = [regex]::Matches($Output, '\b(?:\d{1,3}\.){3}\d{1,3}\b') |
-            ForEach-Object { $_.Value } |
-            Where-Object { $_ -ne "127.0.0.1" } |
-            Sort-Object -Unique
+        ForEach-Object { $_.Value } |
+        Where-Object { $_ -ne "127.0.0.1" } |
+        Sort-Object -Unique
 
         $Bad = ($Addresses.Count -eq 0) -or ($Addresses -contains "0.0.0.0")
 
