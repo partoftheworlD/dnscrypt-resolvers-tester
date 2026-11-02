@@ -33,6 +33,9 @@ chmod +x check-resolvers.sh
 DNSCRYPT_BIN=/usr/local/bin/dnscrypt-proxy \
 DNSCRYPT_CONF=/etc/dnscrypt-proxy/dnscrypt-proxy.toml \
 ./check-resolvers.sh -v
+
+# Свой список резолверов (через пробел, обязательно указывать полное имя резолвера)
+./check-resolvers.sh -r "google cloudflare yandex" -v
 ```
 
 Параметры `.sh`:
@@ -40,6 +43,7 @@ DNSCRYPT_CONF=/etc/dnscrypt-proxy/dnscrypt-proxy.toml \
 - `-v` — подробный вывод.
 - `-d DOMAIN` — домен для проверки.
 - `-c CONFIG` — путь к `dnscrypt-proxy.toml`.
+- `-r "resolver ..."` — список резолверов через пробел (обязательно указывать полное имя резолвера).
 - Первый позиционный аргумент также может задать домен:
   `./check-resolvers.sh example.net`
 
@@ -54,6 +58,9 @@ Set-ExecutionPolicy -Scope Process Bypass
 
 # Пользовательский домен
 .\check-resolvers.ps1 example.org -v
+
+# Свой список резолверов (через пробел, обязательно указывать полное имя резолвера)
+.\check-resolvers.ps1 -r "google cloudflare yandex" -v
 ```
 
 ## Проблемы в работе скрипта

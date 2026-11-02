@@ -3,6 +3,7 @@ set -u
 
 Domain="example.com"
 Verbose=0
+ResolversArg=""
 DNSCRYPT_BIN="${DNSCRYPT_BIN:-$(which dnscrypt-proxy)}"
 DNSCRYPT_CONF="${DNSCRYPT_CONF:-/etc/dnscrypt-proxy/dnscrypt-proxy.toml}"
 DNSCRYPT_CACHE_DIR="${DNSCRYPT_CACHE_DIR:-/var/cache/dnscrypt-proxy}"
@@ -12,6 +13,7 @@ while (($#)); do
     -v) Verbose=1 ;;
     -d) Domain=$2; shift ;;
     -c) DNSCRYPT_CONF=$2; shift ;;
+    -r) ResolversArg=$2; shift ;;
     -*) echo "Неизвестный параметр: $1" >&2; exit 1 ;;
     *)  Domain=$1 ;;
   esac
@@ -59,11 +61,18 @@ now_ns() {
   [[ $v =~ ^[0-9]+$ ]] && printf '%s' "$v" || printf '%s000000000' "$(date +%s)"
 }
 
-ListOut="$(cd "$RunDir" && timeout 30 "$DNSCRYPT_BIN" -config "$DNSCRYPT_CONF" -list 2>/dev/null || true)"
-[ -z "$ListOut" ] && ListOut="$(cd "$RunDir" && timeout 30 "$DNSCRYPT_BIN" -config "$DNSCRYPT_CONF" -list 2>/dev/null || true)"
+if [ -n "${ResolversArg:-}" ]; then
+  mapfile -t Resolvers < <(printf '%s\n' "$ResolversArg" \
+    | tr -s '[:space:]' '\n' \
+    | grep -E '^[A-Za-z0-9][A-Za-z0-9._-]*$' | sort -u)
+else
+  ListOut="$(cd "$RunDir" && timeout 30 "$DNSCRYPT_BIN" -config "$DNSCRYPT_CONF" -list 2>/dev/null || true)"
+  [ -z "$ListOut" ] && ListOut="$(cd "$RunDir" && timeout 30 "$DNSCRYPT_BIN" -config "$DNSCRYPT_CONF" -list 2>/dev/null || true)"
 
-mapfile -t Resolvers < <(printf '%s\n' "$ListOut" | tr -d '\r' \
-  | grep -E '^[A-Za-z0-9][A-Za-z0-9._-]*$' | sort -u)
+  mapfile -t Resolvers < <(printf '%s\n' "$ListOut" | tr -d '\r' \
+    | grep -E '^[A-Za-z0-9][A-Za-z0-9._-]*$' | sort -u)
+fi
+
 [ ${#Resolvers[@]} -eq 0 ] && Resolvers=(google yandex cloudflare)
 
 BadResolvers=()
@@ -152,9 +161,9 @@ done
 
 [ "$Verbose" -eq 0 ] && printf "\n" >&2
 
-echo ""
-echo "Проблемные резолверы:"
 if [ ${#BadResolvers[@]} -gt 0 ]; then
+  echo ""
+  echo "Проблемные резолверы:"
   printf "['"
   for i in "${!BadResolvers[@]}"; do
     [ "$i" -gt 0 ] && printf "', '"
@@ -162,5 +171,6 @@ if [ ${#BadResolvers[@]} -gt 0 ]; then
   done
   printf "']\n"
 else
-  echo "[]"
+  echo ""
+  echo "Нет проблем"
 fi

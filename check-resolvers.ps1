@@ -1,7 +1,8 @@
 param(
     [string]$Domain = "example.com",
     [string]$c,
-    [switch]$v
+    [switch]$v,
+    [string]$r
 )
 
 chcp 65001 | Out-Null
@@ -40,14 +41,20 @@ New-Item -ItemType Directory -Force -Path $TempDir | Out-Null
 
 $BaseText = Get-Content -Raw -Encoding UTF8 $BaseConfig
 
-$Resolvers = & $Exe -config $BaseConfig -list 2>$null |
-ForEach-Object { $_.ToString().Trim() } |
-Where-Object { $_ -match '^[a-zA-Z0-9][a-zA-Z0-9._-]*$' } |
-Sort-Object -Unique
-
-if (-not $Resolvers) {
-    $Resolvers = @("google", "yandex", "cloudflare")
+if ($r) {
+    $Resolvers = ($r -split '\s+') 2>$null
+} else {
+    $Resolvers = & $Exe -config $BaseConfig -list 2>$null
 }
+
+$Resolvers = @($Resolvers |
+    ForEach-Object { $_.ToString().Trim() } |
+    Where-Object { $_ -match '^[a-zA-Z0-9][a-zA-Z0-9._-]*$' } |
+    Sort-Object -Unique)
+
+# if (-not $Resolvers) {
+#     $Resolvers = @("google", "yandex", "cloudflare")
+# }
 
 $BadResolvers = [System.Collections.Generic.List[string]]::new()
 $Total = @($Resolvers).Count
@@ -166,12 +173,12 @@ Write-Progress -Activity "Проверка резолверов" -Completed
 
 Remove-Item -Path $TempDir -Recurse -Force -ErrorAction SilentlyContinue
 
-Write-Host ""
-Write-Host "Проблемные резолверы:"
-
 if ($BadResolvers.Count -gt 0) {
+    Write-Host ""
+    Write-Host "Проблемные резолверы:"
     Write-Host ("['" + ($BadResolvers -join "', '") + "']")
 }
 else {
-    Write-Host "[]"
+    Write-Host ""
+    Write-Host "Нет проблем"
 }
