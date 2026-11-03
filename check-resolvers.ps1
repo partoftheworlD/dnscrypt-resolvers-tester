@@ -5,6 +5,8 @@ param(
     [string]$r
 )
 
+# chcp + переопределение кодировок консоли: иначе русские сообщения и вывод dnscrypt-proxy.exe
+# превращаются в кракозябры в стандартном Windows PowerShell.
 chcp 65001 | Out-Null
 
 [Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false)
@@ -13,6 +15,8 @@ $OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 
 $Exe = Join-Path $PSScriptRoot "dnscrypt-proxy.exe"
 
+# Относительный -c разрешается от каталога скрипта, а не от текущего cwd —
+# иначе запуск «из другого места» молча берёт не тот конфиг.
 if ($c) {
     if ([System.IO.Path]::IsPathRooted($c)) {
         $BaseConfig = $c
@@ -39,6 +43,8 @@ if (-not (Test-Path $BaseConfig)) {
 
 New-Item -ItemType Directory -Force -Path $TempDir | Out-Null
 
+# Конфиг читается один раз: дальше для каждого резолвера правится копия в памяти,
+# а не файл на диске (в отличие от bash-версии).
 $BaseText = Get-Content -Raw -Encoding UTF8 $BaseConfig
 
 if ($r) {
@@ -74,6 +80,8 @@ foreach ($Resolver in $Resolvers) {
         $foundServer = $false
         $foundCache = $false
 
+        # Подменяем только server_names и cache. listen_addresses НЕ трогаем —
+        # значит, порт берётся из базового конфига, и nslookup ниже идёт на стандартный 53.
         for ($i = 0; $i -lt $Lines.Count; $i++) {
             $Line = $Lines[$i]
 
@@ -130,6 +138,7 @@ foreach ($Resolver in $Resolvers) {
         Out-String
         $Sw.Stop()
 
+        # Отбрасываем 127.0.0.1 — это адрес самого сервера в шапке вывода nslookup, а не ответ.
         $Addresses = [regex]::Matches($Output, '\b(?:\d{1,3}\.){3}\d{1,3}\b') |
         ForEach-Object { $_.Value } |
         Where-Object { $_ -ne "127.0.0.1" } |
@@ -149,6 +158,8 @@ foreach ($Resolver in $Resolvers) {
         }
     }
     catch {
+        # Любое исключение (не запустился exe, нет nslookup, ошибка записи файла) — резолвер считаем плохим.
+        # Fix: когда-нибудь
         if (-not $BadResolvers.Contains($Resolver)) {
             [void]$BadResolvers.Add($Resolver)
         }
