@@ -52,9 +52,9 @@ $Resolvers = @($Resolvers |
     Where-Object { $_ -match '^[a-zA-Z0-9][a-zA-Z0-9._-]*$' } |
     Sort-Object -Unique)
 
-# if (-not $Resolvers) {
-#     $Resolvers = @("google", "yandex", "cloudflare")
-# }
+if (-not $Resolvers) {
+    $Resolvers = @("google", "yandex", "cloudflare")
+}
 
 $BadResolvers = [System.Collections.Generic.List[string]]::new()
 $Total = @($Resolvers).Count
