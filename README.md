@@ -12,6 +12,15 @@
 - `DNSCRYPT_CONF`
 - `DNSCRYPT_CACHE_DIR`
 
+Параметры:
+
+- `-v` — подробный вывод.
+- `-d DOMAIN` — домен для проверки.
+- `-c CONFIG` — путь к `dnscrypt-proxy.toml`.
+- `-r "resolver ..."` — список резолверов через пробел (обязательно указывать полное имя резолвера).
+- Первый позиционный аргумент также может задать домен:
+  `./check-resolvers.sh example.net`
+
 ## Использование Linux
 
 ```bash
@@ -37,15 +46,6 @@ DNSCRYPT_CONF=/etc/dnscrypt-proxy/dnscrypt-proxy.toml \
 # Свой список резолверов (через пробел, обязательно указывать полное имя резолвера)
 ./check-resolvers.sh -r "google cloudflare yandex" -v
 ```
-
-Параметры `.sh`:
-
-- `-v` — подробный вывод.
-- `-d DOMAIN` — домен для проверки.
-- `-c CONFIG` — путь к `dnscrypt-proxy.toml`.
-- `-r "resolver ..."` — список резолверов через пробел (обязательно указывать полное имя резолвера).
-- Первый позиционный аргумент также может задать домен:
-  `./check-resolvers.sh example.net`
 
 ## Использование Windows
 
